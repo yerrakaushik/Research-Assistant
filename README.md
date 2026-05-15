@@ -71,7 +71,30 @@ User Topic
 📄 Research Blueprint
 ```
 
-## Get a Gemini API Key
-1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey)
-2. Create a new API key
-3. Add to `backend/.env` as `GEMINI_API_KEY=...`
+## 🚀 Deployment
+
+### 1. Backend (Render)
+This project is configured for one-click deployment on Render using the `render.yaml` blueprint.
+1. Create a [Render](https://render.com/) account.
+2. Connect your GitHub repository.
+3. Render will detect `render.yaml` and prompt to create the Blueprint.
+4. Set the following Environment Variables in the Render dashboard:
+   - `GEMINI_API_KEY`: Your key from Google AI Studio.
+   - `ALLOWED_ORIGINS`: Set this to your Vercel URL once the frontend is deployed.
+
+### 2. Frontend (Vercel)
+1. Import your repository into [Vercel](https://vercel.com/).
+2. Set the **Root Directory** to `frontend`.
+3. Add an Environment Variable:
+   - `VITE_API_URL`: The URL of your Render backend (e.g., `https://research-assistant-api.onrender.com`).
+4. Deploy!
+
+## 🐳 Docker (Local Development)
+You can run the entire stack locally using Docker:
+```bash
+docker-compose up --build
+```
+The backend will be available at `localhost:8000` and the frontend at `localhost:5173`.
+
+## 📜 License
+MIT
