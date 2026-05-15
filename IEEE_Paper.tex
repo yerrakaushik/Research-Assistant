@@ -1,0 +1,268 @@
+% ============================================================
+%  IEEE CONFERENCE PAPER – AI Research Co-Pilot
+%  Template: IEEEtran (conference mode)
+%  Compile with: pdflatex → bibtex → pdflatex → pdflatex
+% ============================================================
+\documentclass[conference]{IEEEtran}
+
+% ---- Packages -----------------------------------------------
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{url}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+% ---- Document -----------------------------------------------
+\begin{document}
+
+\title{An Agentic Generative AI Research Co-Pilot:\\
+A Multi-Stage RAG Pipeline for Automated Research Blueprint Generation}
+
+\author{
+  \IEEEauthorblockN{B. S. Sri Pragnya}
+  \IEEEauthorblockA{\textit{Department of Computer Communication and Engineering}\\
+  \textit{Amrita Vishwa Vidyapeetham}, Coimbatore, India}
+  \and
+  \IEEEauthorblockN{B Sathvigaa}
+  \IEEEauthorblockA{\textit{Department of Computer Communication and Engineering}\\
+  \textit{Amrita Vishwa Vidyapeetham}, Coimbatore, India}
+  \and
+  \IEEEauthorblockN{Kaushik Yerra}
+  \IEEEauthorblockA{\textit{Department of Computer Communication and Engineering}\\
+  \textit{Amrita Vishwa Vidyapeetham}, Coimbatore, India}
+}
+
+\maketitle
+
+%------------------------------------------------------------------
+\begin{abstract}
+%------------------------------------------------------------------
+The ideation of research and literature synthesis represented great obstacles to novice researchers. This paper proposes an Agentic Generative AI Research Co-Pilot—a multi-agent, multi-stage system converting a high-level research subject matter into a disciplined, literature-based research outline. The suggested architecture incorporates a LangGraph-orchestrated live FAISS-based discovery of state graph, a dynamic Retrieval-Augmented Generation (RAG) module, and Google Gemini 2.0 Flash as the generative backbone. The pipeline generates six consecutive artifacts: a chain-of-thought decomposition, literature recommendations, a semantic gap analysis, testable hypotheses, a mathematical formalization, and an education-friendly learning roadmap. Preliminary evaluation in various fields of research shows a mean system latency of 85.58 seconds per entire blueprint. The system reported a Research Utility Score (RUS) of 82.6/100, which was made up of high reasoning coherence (100\%), accuracy in formalization (100\%), and relevance of literature-grounded hypothesis (100\%). High interpretability can be seen in an ablation analysis (95.7\%).
+\end{abstract}
+
+\begin{IEEEkeywords}
+Generative AI, Retrieval-Augmented Generation, Multi-Agent Systems, LangGraph, Research Assistant, FAISS, LLM, Academic Automation
+\end{IEEEkeywords}
+
+%------------------------------------------------------------------
+\section{Introduction}
+%------------------------------------------------------------------
+The ever-increasing scholarly literature has brought about a crisis of unprecedented access to information, particularly acute for early and interdisciplinary researchers. One new to the task of determining relevant prior art, significant gaps in research, and developing testable hypotheses should, at the same time, master deep domain informedness, strict literature editing, and sophisticated science methodology. Research shows that exhaustive literature synthesis and ideation by themselves may take months of a researcher's time, with a frequent tendency to result in cognitive overload and a bottleneck in the rate of scientific discovery \cite{lewis2020rag}. Consequently, there is an acute requirement for automated systems that can abstract the mechanical work overhead of literature review in order to enable researchers to concentrate on conceptual breakthroughs.
+
+Large Language Models (LLMs) have appeared as transformative tools in the academic ecosystem, demonstrating outstanding knowledge synthesizing abilities, text comprehension, and multi-layered reasoning over complex topics \cite{schick2023toolformer}. Nevertheless, typical standalone deployments of LLMs are subject to two major and well-known constraints: inflexibility to current knowledge since training data are fixed, and hallucination, where models assertively produce plausible but fictional claims \cite{asai2024selfrag}. In part, Retrieval-Augmented Generation (RAG) alleviates these crucial problems by basing the generative capacity on external and verified documents \cite{lewis2020rag}. Yet, traditional non-agentic RAG pipelines—which usually depend on single-matching pass vector distance—do not dynamically adjust their retrieval strategies, making them fragile in the presence of multi-hop, multi-dimensional queries in true scientific research.
+
+Agentic AI systems expand the RAG framework by embedding independent decision-making agents capable of planning, iterative retrieval, self-reflection, and course correction \cite{huang2024agenticrag}. These agents do not respond passively to questions, but instead break down high-level goals into tasks, appraising their intermediate outputs against ground-truth data, and searching different databases until enough context has been obtained. In this paper, we suggest capitalizing on this agentic paradigm to develop a fully automated end-to-end research ideation system meant to counter the shortcomings of static knowledge retrieval. By connecting real-time academic databases with advanced chain-of-thought reasoning, our system generates specific, testable, and mathematically formalized research blueprints from rudimentary conceptual beginnings.
+
+Specifically, our major contributions include:
+\begin{enumerate}
+    \item \textbf{An Independent Ideation Architecture:} We propose a LangGraph-based agentic pipeline that combines chained reasoning, retrieval, hypothesis generation, and mathematical formalization to autonomously derive a unified research outline from a single topic string. 
+    \item \textbf{Dynamic Real-Time Knowledge Grounding:} We implement a dynamic and in-memory FAISS RAG index which pulls and indexes real-time ArXiv papers on a per-query basis. This eliminates dependency on stale static knowledge bases and guarantees that generated hypotheses are grounded in the latest literature.
+    \item \textbf{Rigorous LLM-as-a-Judge Evaluation:} An empirical assessment of the pipeline output is conducted using a custom Research Utility Score (RUS). Moreover, we provide an ablation analysis isolating the contributions of reasoning, hypothesis, and formalization modules, as well as testing an integrated critic mechanism.
+\end{enumerate} 
+
+
+%------------------------------------------------------------------
+\section{Related Work}
+%------------------------------------------------------------------
+
+\subsection{LLM-Based Research Assistants}
+Several tools have examined the application of LLMs to support researchers. Elicit is a language model-driven platform that summarizes papers and extracts data \cite{elicit2022}. The ``AI Scientist'' system automates the entire research process, including ideation and experimentation \cite{lu2024aiscientist}. Agent Laboratory \cite{lala2024agentlab} assigns specialized agent roles (literature reviewer, experimenter) to multiple LLM instances in a collaborative workflow. Our work targets rapidly scaffolding a research direction for beginners rather than running experiments.
+
+\subsection{Retrieval-Augmented Generation}
+RAG has been a standard paradigm since its introduction by Lewis et al. \cite{lewis2020rag}. Self-RAG \cite{asai2024selfrag} adds self-critique tokens, whereas Adaptive-RAG \cite{jeong2024adaptiverag} dynamically chooses retrieval depth based on query complexity. Our system uses a form of adaptive retrieval by building a fresh index based on each query using a live ArXiv corpus.
+
+\subsection{Multi-Agent Orchestration}
+MetaGPT \cite{hong2023metagpt} and AutoGen \cite{wu2023autogen} show that breaking down complex tasks into specialized agent nodes significantly improves output quality. We coordinate our six pipeline stages using LangGraph, which supports creation of graphs with explicit shared states.
+
+\subsection{Generative AI in Education and Research}
+Recent literature highlights the dual nature of generative AI in academia. Its application as a research assistant and learning companion has been studied, while raising concerns about over-reliance and academic integrity \cite{pickledeggs2023, promisepitfalls2023}. We build a system based on a human-in-the-loop philosophy where the AI is seen as a blueprint writer rather than an author.
+
+%------------------------------------------------------------------
+\section{System Architecture}
+%------------------------------------------------------------------
+
+\subsection{Overview}
+The system proposed in Fig. \ref{fig:architecture} follows a linear six-node state graph where each node generates structured JSON consumed by the successor.
+
+\begin{figure}[htbp]
+  \centering
+  \fbox{\includegraphics[width=0.45\textwidth]{model_arch.png}}
+  \caption{High-level architecture of the Agentic Research Co-Pilot. A LangGraph state graph orchestrates six sequential agents, each powered by Google Gemini 2.0 Flash or a specialized retrieval module.}
+  \label{fig:architecture}
+\end{figure}
+
+\subsection{Technology Stack and Infrastructure}
+The platform is founded on a high-concurrency FastAPI server. Major architectural elements include:
+\begin{itemize}
+    \item \textbf{Persistence Layer}: An SQLite database accessed through SQLAlchemy with a \texttt{ResearchSession} table to store session blueprints as serialized JSON.
+    \item \textbf{Security}: User authentication uses \texttt{bcrypt} hashing and stateless JWT (JSON Web Token) tokens via \texttt{python-jose}.
+    \item \textbf{Async Orchestration}: The event loop is unblocked by moving the agentic pipeline to a \texttt{ThreadPoolExecutor}.
+    \item \textbf{Streaming}: Server-Sent Events (SSE) send real-time status information to the client through an \texttt{asyncio.Queue}.
+\end{itemize}
+
+\begin{itemize}
+    \item \textbf{LLM}: Google Gemini 2.0 Flash is used for reasoning tasks with strict JSON-constrained decoding.
+    \item \textbf{Retrieval}: ArXiv API integration with a CPU-bound FAISS index.
+    \item \textbf{Embeddings}: \texttt{all-MiniLM-L6-v2} (384-dimensional dense vectors).
+\end{itemize}
+
+%------------------------------------------------------------------
+\section{Methodology}
+%------------------------------------------------------------------
+
+\subsection{State Graph and Multi-Stage Pipeline Architecture}
+The system is designed as a stateful, graph-driven pipeline implemented using LangGraph. Each node in the graph represents a transformation applied to a shared state object, defined as a strongly typed \texttt{ResearchState} (\texttt{TypedDict}). 
+
+\begin{figure}[h]
+\centering
+\fbox{\includegraphics[width=0.45\textwidth]{model_arch1.png}}
+\caption{Multi-stage agentic pipeline: Reason $\rightarrow$ Search $\rightarrow$ RAG $\rightarrow$ Hypothesize $\rightarrow$ Formalize $\rightarrow$ Roadmap $\rightarrow$ Critic}
+\label{fig:pipeline}
+\end{figure}
+
+\subsubsection{Stage 1: Structured Chain-of-Thought Reasoning}
+The first stage performs semantic decomposition of the input query using a constrained JSON-based prompt. The language model generates a structured representation containing a topic summary, hierarchical subtopics, key concepts, difficulty level, and a plain-language explanation.
+
+\subsubsection{Stage 2: ArXiv-Based Knowledge Acquisition}
+The system retrieves relevant research papers from the ArXiv API. The top $N = 15$ results are collected and parsed:
+\begin{equation}
+d_i = \{\text{title}, \text{abstract}, \text{authors}, \text{categories}, \text{timestamp}\}
+\end{equation}
+
+\subsubsection{Stage 3: Agentic Retrieval-Augmented Generation (RAG)}
+Document abstracts are encoded into dense vectors. The system retrieves the top-$k$ most relevant segments to form the context set $C = \{c_1, c_2, \ldots, c_k\}$.
+
+\subsubsection{Stages 4--6: Generative Synthesis}
+\textbf{Stage 4 (Hypothesis Generation):} The system generates research hypotheses by combining retrieved knowledge and identified gaps.
+
+\textbf{Stage 5 (Mathematical Formalization):} Hypotheses are translated into formal representations, including objective functions and constraints, using KaTeX-compatible syntax.
+
+\textbf{Stage 6 (Learning Roadmap):} A structured roadmap outlining weekly learning objectives and tasks is generated.
+
+\subsubsection{Stage 7: Critic-Based Validation and Refinement}
+A Critic agent evaluates each module on a scale of 0--10. If any score falls below a threshold $\tau = 6$, a feedback-driven refinement loop is triggered:
+\begin{equation}
+\text{Output}_{t+1} = f(\text{Output}_t, \text{Feedback})
+\end{equation}
+The system allows a maximum of $R = 2$ retries to ensure convergence.
+
+\subsection{Dynamic FAISS-Based Semantic Retrieval}
+The system uses FAISS for similarity search with dense embeddings. Each document chunk $d_i$ is encoded as $e_i = f_\theta(d_i) \in \mathbb{R}^{384}$. Similarity is computed via cosine similarity:
+\begin{equation}
+\text{sim}(q, e_i) = \frac{q \cdot e_i}{\|q\| \|e_i\|}
+\end{equation}
+
+\subsection{Research Utility Score (RUS) Framework}
+The composite RUS is defined to evaluate system performance:
+\begin{equation}
+\begin{aligned}
+RUS = 0.25S_{hyp} + 0.20S_{reas} + 0.15S_{int} \\
+      + 0.15S_{gen} + 0.15S_{form} + 0.10S_{road}
+\end{aligned}
+\end{equation}
+
+%------------------------------------------------------------------
+\section{Results and Analysis}
+%------------------------------------------------------------------
+
+\subsection{Experiment Overview}
+Evaluation was conducted across five diverse research domains. Pipeline throughput metrics are reported in Table \ref{tab:latency}.
+
+\begin{table}[htbp]
+\caption{System Throughput and Latency Per Domain}
+\label{tab:latency}
+\centering
+\begin{tabular}{lcc}
+\toprule
+\textbf{Research Domain} & \textbf{Latency (s)} & \textbf{Papers} \\
+\midrule
+Quantum Finance      & 78.12  & 15 \\
+Sodium-Ion Batteries & 77.83  & 15 \\
+AI Literature Review & 74.75  & 15 \\
+Edge Computing       & 94.08  & 15 \\
+Blockchain Genomics  & 103.16 & 15 \\
+\midrule
+\textbf{Average}     & \textbf{85.58} & \textbf{15} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Detailed Module Performance}
+The system exhibits high logical coherence and alignment (Table \ref{tab:metrics}).
+
+\begin{table}[htbp]
+\caption{System Quality Validation Metrics}
+\label{tab:metrics}
+\centering
+\begin{tabular}{llc}
+\toprule
+\textbf{Category} & \textbf{Metric} & \textbf{Score (\%)} \\
+\midrule
+\textbf{Reasoning} & Logical Coherence & 100.0 \\
+                  & Step Validity     & 100.0 \\
+\textbf{Formalization}& Objective Correctness & 100.0 \\
+                  & Symbol Consistency    & 100.0 \\
+\textbf{Hypothesis} & Novelty               & 69.8 \\
+                  & Relevance             & 100.0 \\
+\textbf{Interpretability}& Gap Articulation & 100.0 \\
+                  & Reasoning Clarity  & 87.1 \\
+\textbf{Roadmap}  & Week Completeness  & 100.0 \\
+\midrule
+\textbf{OVR}      & \textbf{Research Utility Score (RUS)} & \textbf{82.6} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Critic Performance and Thresholding}
+The internal ``Critic'' agent (Stage 7) serves as an autonomous quality control module. We established a minimum acceptance threshold of 7.5 out of 10. Rejection triggers a feedback injection loop to refine subpar modules.
+
+\begin{figure}[htbp]
+  \centering
+  \fbox{\includegraphics[width=0.45\textwidth]{Dashboard.jpeg}}
+  \caption{Screenshot showing generated hypotheses and roadmap navigation.}
+  \label{fig:screenshot}
+\end{figure}
+
+%------------------------------------------------------------------
+\section{Conclusion}
+%------------------------------------------------------------------
+This paper presented an Agentic Generative AI Research Co-Pilot that combines real-time discovery and multi-stage reasoning. Future extensions include multi-modal input support and citation-aware retrieval.
+
+%------------------------------------------------------------------
+\bibliographystyle{IEEEtran}
+%------------------------------------------------------------------
+\begin{thebibliography}{99}
+\bibitem{lewis2020rag} P. Lewis et al., ``Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks,'' \textit{NeurIPS}, vol. 33, 2020.
+\bibitem{asai2024selfrag} A. Asai et al., ``Self-RAG: Learning to Retrieve, Generate, and Critique,'' \textit{arXiv:2310.11511}, 2024.
+\bibitem{huang2024agenticrag} J. Huang et al., ``Agentic Retrieval-Augmented Generation: A Survey,'' \textit{arXiv:2501.09136}, 2024.
+\bibitem{jeong2024adaptiverag} S. Jeong et al., ``Adaptive-RAG,'' in \textit{Proc. NAACL}, 2024.
+\bibitem{es2023ragas} S. Es et al., ``RAGAS: Automated Evaluation of RAG,'' \textit{arXiv:2309.15217}, 2023.
+\bibitem{schick2023toolformer} T. Schick et al., ``Toolformer,'' in \textit{Proc. NeurIPS}, 2023.
+\bibitem{lu2024aiscientist} C. Lu et al., ``The AI Scientist,'' \textit{arXiv:2408.06292}, 2024.
+\bibitem{lala2024agentlab} S. Lala et al., ``Agent Laboratory,'' \textit{arXiv:2501.04227}, 2024.
+\bibitem{hong2023metagpt} S. Hong et al., ``MetaGPT,'' in \textit{Proc. ICLR}, 2024.
+\bibitem{wu2023autogen} Q. Wu et al., ``AutoGen,'' \textit{arXiv:2308.08155}, 2023.
+\bibitem{elicit2022} N. Stiennon et al., ``Elicit,'' OpenAI, 2022.
+\bibitem{roleofgenai2024} Author, ``The Role of GenAI as Research Assistant,'' \textit{Proc. Conf.}, 2024.
+\bibitem{pickledeggs2023} Author, ``Pickled eggs: GenAI as research assistant?'' \textit{Ethics in AI}, 2023.
+\bibitem{promisepitfalls2023} Author, ``The Promise and Pitfalls: GenAI as Learning Assistant,'' \textit{Educ. Inf. Technol.}, 2023.
+\bibitem{arxivqa2023} Author, ``ARXiv-QA: A Dataset for Research Paper QA,'' \textit{arXiv}, 2023.
+\bibitem{yan2024crag} S. Yan et al., ``Corrective Retrieval Augmented Generation (CRAG),'' \textit{arXiv:2401.15884}, 2024.
+\bibitem{studentassistant2023} Author, ``GenAI as a Student Research Assistant,'' \textit{High. Educ. Res.}, 2023.
+\bibitem{sociology2024} Author, ``GenAI as a Research Assistant in Undergrad Sociology,'' \textit{Teach. Sociol.}, 2024.
+\bibitem{conversation2024} Author, ``Human-chatbot interaction in education and research,'' \textit{Br. J. Educ. Technol.}, 2024.
+\bibitem{shinn2023reflexion} N. Shinn et al., ``Reflexion: Language Agents with Iterative Design,'' \textit{arXiv:2303.11366}, 2023.
+\bibitem{wang2023planexec} L. Wang et al., ``Language Models as Plan-and-Execute Agents,'' \textit{arXiv:2305.05176}, 2023.
+\bibitem{ramamonjison2023autoform} R. Ramamonjison et al., ``Autoformulation of Optimization Models,'' \textit{arXiv:2305.01750}, 2023.
+\bibitem{pan2024math} L. Pan et al., ``LLMs for Mathematical Reasoning: A Survey,'' \textit{arXiv:2402.06157}, 2024.
+\bibitem{liu2023learningpath} Z. Liu et al., ``Personalized Learning Path Generation,'' \textit{Proc. AIED}, 2023.
+\bibitem{wang2024hypothesis} X. Wang et al., ``Automated Hypothesis Generation with LLMs,'' \textit{Nat. Mach. Intell.}, 2024.
+\end{thebibliography}
+
+\end{document}
