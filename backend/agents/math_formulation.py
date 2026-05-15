@@ -8,6 +8,7 @@ import re
 from agents.gemini_client import get_model, MODEL_NAME as _MODEL_NAME
 
 
+def generate_math_formulation(topic, reasoning_summary, critic_feedback=None):
     model = get_model()
 
     feedback_block = f"\n\nPrevious attempt was rejected. Fix this issue: {critic_feedback}" if critic_feedback and critic_feedback != "Looks good" else ""
