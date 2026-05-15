@@ -4,8 +4,8 @@ python-dotenv==1.0.1
 google-generativeai==0.7.2
 langgraph==0.1.19
 langchain-core==0.2.22
-arxiv==2.1.0
-feedparser>=6.0.11
+arxiv
+feedparser
 sentence-transformers==3.0.1
 faiss-cpu>=1.12.0
 sqlalchemy==2.0.31
