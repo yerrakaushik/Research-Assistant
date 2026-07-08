@@ -7,6 +7,7 @@ import json
 import asyncio
 import os
 import logging
+import uuid
 from contextlib import asynccontextmanager
 from concurrent.futures import ThreadPoolExecutor
 
@@ -123,6 +124,28 @@ def login(request: Request, payload: UserLogin, db: Session = Depends(get_db)):
 
     token = create_access_token({"sub": user.email})
     logger.info(f"User logged in: {user.username}")
+    return {"access_token": token, "token_type": "bearer", "username": user.username}
+
+
+@app.post("/api/auth/guest", response_model=Token)
+@limiter.limit("20/minute")
+def guest_login(request: Request, db: Session = Depends(get_db)):
+    guest_id = str(uuid.uuid4())[:8]
+    username = f"Guest_{guest_id}"
+    email = f"guest_{guest_id}@example.com"
+    password = str(uuid.uuid4())
+
+    user = User(
+        username=username,
+        email=email,
+        hashed_password=hash_password(password),
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    token = create_access_token({"sub": user.email})
+    logger.info(f"Guest user registered/logged in: {user.username}")
     return {"access_token": token, "token_type": "bearer", "username": user.username}
 
 

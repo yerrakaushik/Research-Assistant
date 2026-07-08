@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { login } from '../utils/api';
+import { login, guestLogin } from '../utils/api';
 import './Auth.css';
 
 export default function Login() {
@@ -20,6 +20,21 @@ export default function Login() {
       navigate('/dashboard');
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGuestLogin = async () => {
+    setLoading(true);
+    try {
+      const res = await guestLogin();
+      localStorage.setItem('token', res.data.access_token);
+      localStorage.setItem('username', res.data.username);
+      toast.success(`Welcome, ${res.data.username}!`);
+      navigate('/dashboard');
+    } catch (err) {
+      toast.error('Guest login failed');
     } finally {
       setLoading(false);
     }
@@ -63,8 +78,11 @@ export default function Login() {
               required
             />
           </div>
-          <button id="login-submit" type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '13px' }} disabled={loading}>
+          <button id="login-submit" type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '13px', marginBottom: '10px' }} disabled={loading}>
             {loading ? <><span className="spinner" /> Signing in…</> : 'Sign In →'}
+          </button>
+          <button type="button" onClick={handleGuestLogin} className="btn" style={{ width: '100%', justifyContent: 'center', padding: '13px', background: 'var(--bg-glass)', border: '1px solid var(--border)' }} disabled={loading}>
+            Continue as Guest
           </button>
         </form>
         <p className="auth-switch">

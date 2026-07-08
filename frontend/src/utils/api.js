@@ -18,6 +18,7 @@ api.interceptors.request.use((config) => {
 // Auth
 export const register = (data) => api.post('/api/auth/register', data);
 export const login = (data) => api.post('/api/auth/login', data);
+export const guestLogin = () => api.post('/api/auth/guest');
 
 // Research
 export const runResearch = (topic) => api.post('/api/research', { topic });
