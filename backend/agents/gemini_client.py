@@ -24,7 +24,7 @@ _client = OpenAI(
 )
 
 # Free model on OpenRouter — no quota limits, no billing needed
-MODEL_NAME = "meta-llama/llama-3.1-8b-instruct:free"
+MODEL_NAME = "google/gemma-2-9b-it:free"
 
 
 class _GenerateResponse:
