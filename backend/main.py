@@ -135,10 +135,15 @@ def guest_login(request: Request, db: Session = Depends(get_db)):
     email = f"guest_{guest_id}@example.com"
     password = str(uuid.uuid4())
 
+    # Use an extremely fast hash for guests to prevent CPU blocking on Render
+    import bcrypt
+    fast_salt = bcrypt.gensalt(rounds=4)
+    fast_hash = bcrypt.hashpw(password.encode('utf-8'), fast_salt).decode('utf-8')
+
     user = User(
         username=username,
         email=email,
-        hashed_password=hash_password(password),
+        hashed_password=fast_hash,
     )
     db.add(user)
     db.commit()
