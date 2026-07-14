@@ -23,8 +23,8 @@ _client = OpenAI(
     api_key=_OPENROUTER_API_KEY,
 )
 
-# Free model on OpenRouter — no quota limits, no billing needed
-MODEL_NAME = "google/gemma-2-9b-it:free"
+# Free model on OpenRouter — auto-routes to best free model
+MODEL_NAME = "openrouter/free"
 
 
 class _GenerateResponse:
