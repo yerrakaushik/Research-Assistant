@@ -27,10 +27,14 @@ _client = OpenAI(
 MODEL_NAME = "openrouter/free"
 
 
+import re
+
 class _GenerateResponse:
     """Mimics the Gemini SDK response object so all agents work unchanged."""
     def __init__(self, text: str):
-        self.text = text
+        # Clean markdown code blocks from response to prevent JSONDecodeErrors
+        cleaned_text = re.sub(r"^```(?:json)?\n?(.*?)\n?```$", r"\1", text.strip(), flags=re.DOTALL)
+        self.text = cleaned_text
 
 
 class _OpenRouterModel:
