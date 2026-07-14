@@ -32,9 +32,16 @@ import re
 class _GenerateResponse:
     """Mimics the Gemini SDK response object so all agents work unchanged."""
     def __init__(self, text: str):
-        # Clean markdown code blocks from response to prevent JSONDecodeErrors
-        cleaned_text = re.sub(r"^```(?:json)?\n?(.*?)\n?```$", r"\1", text.strip(), flags=re.DOTALL)
-        self.text = cleaned_text
+        text = text.strip()
+        # Find the first { or [ and the last } or ] to extract JSON
+        # This handles free models that add "Here is the JSON:" or "Hope this helps!"
+        match = re.search(r"(\{.*\}|\[.*\])", text, re.DOTALL)
+        if match:
+            self.text = match.group(1)
+        else:
+            # If no brackets found, fallback to stripping markdown just in case
+            cleaned_text = re.sub(r"^```(?:json)?\n?(.*?)\n?```$", r"\1", text, flags=re.DOTALL)
+            self.text = cleaned_text
 
 
 class _OpenRouterModel:
