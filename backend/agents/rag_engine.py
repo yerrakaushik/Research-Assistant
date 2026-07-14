@@ -4,9 +4,8 @@ and runs semantic search to retrieve relevant context chunks.
 """
 
 from typing import List, Dict
-import numpy as np
-
 try:
+    import numpy as np
     from sentence_transformers import SentenceTransformer
     import faiss
     _FAISS_AVAILABLE = True
