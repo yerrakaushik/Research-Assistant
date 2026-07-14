@@ -24,7 +24,7 @@ _client = OpenAI(
 )
 
 # Free model on OpenRouter — no quota limits, no billing needed
-MODEL_NAME = "google/gemini-2.0-flash-exp:free"
+MODEL_NAME = "meta-llama/llama-3.1-8b-instruct:free"
 
 
 class _GenerateResponse:
