@@ -48,7 +48,7 @@ Return ONLY the JSON object."""
         text = response.text.strip()
         text = re.sub(r"^```json\s*", "", text)
         text = re.sub(r"\s*```$", "", text)
-        result = json.loads(text)
+        result = json.loads(text, strict=False)
         print(f"[Reasoning] OK — difficulty: {result.get('difficulty_level')}, subtopics: {len(result.get('subtopics', []))}")
         return result
     except Exception as e:

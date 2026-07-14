@@ -72,7 +72,7 @@ Return ONLY the JSON object."""
         text = response.text.strip()
         text = re.sub(r"^```json\s*", "", text)
         text = re.sub(r"\s*```$", "", text)
-        result = json.loads(text)
+        result = json.loads(text, strict=False)
         print(f"[Hypothesis] OK — gaps: {len(result.get('gaps', []))}, hypotheses: {len(result.get('hypotheses', []))}")
         return result
     except Exception as e:

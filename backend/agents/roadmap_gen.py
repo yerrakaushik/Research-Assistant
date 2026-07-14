@@ -45,7 +45,7 @@ Return ONLY the JSON array, no extra text."""
         text = response.text.strip()
         text = re.sub(r"^```json\s*", "", text)
         text = re.sub(r"\s*```$", "", text)
-        roadmap = json.loads(text)
+        roadmap = json.loads(text, strict=False)
         if isinstance(roadmap, list):
             print(f"[Roadmap] OK — {len(roadmap)} weeks generated")
             return roadmap

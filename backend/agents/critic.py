@@ -87,7 +87,7 @@ Return ONLY a valid JSON object:
         text = response.text.strip()
         text = re.sub(r"^```json\s*", "", text)
         text = re.sub(r"\s*```$", "", text)
-        result = json.loads(text)
+        result = json.loads(text, strict=False)
 
         scores = result.get("scores", {})
         feedback = result.get("feedback", {})

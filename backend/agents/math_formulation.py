@@ -50,7 +50,7 @@ Return ONLY the JSON object."""
         text = response.text.strip()
         text = re.sub(r"^```json\s*", "", text)
         text = re.sub(r"\s*```$", "", text)
-        return json.loads(text)
+        return json.loads(text, strict=False)
     except Exception as e:
         print(f"[Math] Error: {e}")
         return {
